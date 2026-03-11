@@ -33,13 +33,13 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Tourism | Explore the World</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         /* Hero Section Styling */
         .hero {
             height: 60vh;
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('../assets/img/hero-bg.jpg') center/cover no-repeat;
+                        url('./assets/img/hero-bg.jpg') center/cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -133,7 +133,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
         <div class="destination-container">
             <?php foreach($recommended as $dest): ?>
                 <div class="card" style="border: 2px solid #3498db;">
-                    <img src="../assets/img/<?php echo $dest['image_url']; ?>" alt="<?php echo $dest['name']; ?>">
+                    <img src="./assets/img/<?php echo $dest['image_url']; ?>" alt="<?php echo $dest['name']; ?>">
                     <div class="card-content">
                         <h3><?php echo htmlspecialchars($dest['name']); ?> <small class="badge" style="background:#3498db; font-size:0.6rem;">Match</small></h3>
                         <a href="destination-details.php?id=<?php echo $dest['id']; ?>" class="btn">Explore Now</a>
@@ -153,7 +153,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
 
         <?php foreach($destinations as $dest): ?>
             <div class="card">
-                <img src="../assets/img/<?php echo $dest['image_url']; ?>" alt="<?php echo $dest['name']; ?>">
+                <img src="./assets/img/<?php echo $dest['image_url']; ?>" alt="<?php echo $dest['name']; ?>">
                 <div class="card-content">
                     <h3><?php echo htmlspecialchars($dest['name']); ?></h3>
                     <p style="color: #666; font-size: 0.9rem;"><strong>Top Food:</strong> <?php echo htmlspecialchars($dest['food_culture']); ?></p>

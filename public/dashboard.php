@@ -29,7 +29,7 @@ $user_bookings = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <title>My Dashboard | Digital Travel</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }

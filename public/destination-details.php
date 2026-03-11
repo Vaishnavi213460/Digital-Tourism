@@ -26,7 +26,7 @@ $hotels = $acc_stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($destination['name']); ?> - Details</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         .details-container { max-width: 1000px; margin: auto; padding: 20px; font-family: sans-serif; }
         .hero-banner { width: 100%; height: 350px; overflow: hidden; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -46,7 +46,7 @@ $hotels = $acc_stmt->fetchAll();
         <h1>Welcome to <?php echo htmlspecialchars($destination['name']); ?></h1>
         
         <div class="hero-banner">
-            <img src="../assets/img/<?php echo $destination['image_url']; ?>" alt="Destination Banner">
+            <img src="./assets/img/<?php echo $destination['image_url']; ?>" alt="Destination Banner">
         </div>
         
         <div class="grid-section">

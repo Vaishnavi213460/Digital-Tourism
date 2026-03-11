@@ -22,7 +22,7 @@ $messages = $pdo->query("SELECT m.*, u.full_name FROM support_messages m JOIN us
 <html>
 <head>
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         body { font-family: sans-serif; display: flex; margin: 0; background: #f4f7f6; }
         .sidebar { width: 250px; background: #333; color: white; min-height: 100vh; padding: 20px; }
