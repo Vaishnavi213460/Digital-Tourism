@@ -1,0 +1,11 @@
+{
+  "name": "Digital Tourism Platform",
+  "short_name": "TravelApp",
+  "start_url": "index.php",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff5a5f",
+  "icons": [
+    { "src": "../assets/img/icon-192.png", "sizes": "192x192", "type": "image/png" }
+  ]
+}
