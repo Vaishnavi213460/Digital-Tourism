@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../config/db.php';
+require_once '../includes/lang_loader.php';
+$lang = loadLanguage();
 
 // 1. SECURITY: If not logged in, redirect to login page
 if (!isset($_SESSION['user_id'])) {
@@ -39,27 +41,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Confirm Booking</title>
+    <title><?php echo $lang['booking_title']; ?></title>
     <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body style="background:#f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
     <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px;">
-        <h2 style="margin-top: 0;">Confirm Your Booking</h2>
-        <p>Booking as: <strong><?php echo $_SESSION['user_name']; ?></strong></p>
-        <p>Item: <strong><?php echo htmlspecialchars($item['name']); ?></strong></p>
+        <h2 style="margin-top: 0;"><?php echo $lang['booking_header']; ?></h2>
+        <p><?php echo $lang['booking_as']; ?> <strong><?php echo $_SESSION['user_name']; ?></strong></p>
+        <p><?php echo $lang['item_label']; ?> <strong><?php echo htmlspecialchars($item['name']); ?></strong></p>
         
         <form method="POST">
             <input type="hidden" name="full_name" value="<?php echo $_SESSION['user_name']; ?>">
             <input type="hidden" name="email" value="<?php echo $_SESSION['user_email']; ?>">
             
-            <label style="display:block; margin-bottom: 5px;">Travel Date</label>
+            <label style="display:block; margin-bottom: 5px;"><?php echo $lang['travel_date_label']; ?></label>
             <input type="date" name="travel_date" required style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box;">
             
             <button type="submit" style="width:100%; background:#ff5a5f; color:white; border:none; padding:12px; border-radius:5px; font-weight:bold; cursor:pointer;">
-                Submit Booking Request
+                <?php echo $lang['submit_booking']; ?>
             </button>
         </form>
-        <p style="text-align:center;"><a href="index.php" style="color:#666; font-size:0.9rem;">Cancel</a></p>
+        <p style="text-align:center;"><a href="index.php" style="color:#666; font-size:0.9rem;"><?php echo $lang['cancel']; ?></a></p>
     </div>
 </body>
 </html>

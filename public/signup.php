@@ -1,5 +1,7 @@
 <?php
 require_once '../config/db.php';
+require_once '../includes/lang_loader.php';
+$lang = loadLanguage();
 
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -11,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: login.php?msg=account_created");
         exit();
     } catch (PDOException $e) {
-        $error = "This email is already registered!";
+        $error = $lang['email_exists'] ?? "This email is already registered!";
     }
 }
 ?>
@@ -21,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | Digital Tourism</title>
+    <title><?php echo $lang['signup_title']; ?></title>
     <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         body {
@@ -121,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
 <div class="auth-card">
-    <h2>Create Account</h2>
+    <h2><?php echo $lang['signup_header']; ?></h2>
 
     <?php if ($error): ?>
         <div class="error-msg"><?php echo $error; ?></div>
@@ -129,8 +131,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <form method="POST">
         <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" name="full_name" placeholder="John Doe" required>
+            <label><?php echo $lang['full_name_label']; ?></label>
+            <input type="text" name="full_name" placeholder="<?php echo $lang['full_name_placeholder']; ?>" required>
         </div>
 
         <div class="form-group">

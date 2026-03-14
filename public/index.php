@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../config/db.php';
+require_once '../includes/lang_loader.php';
+$lang = loadLanguage();
 
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
     header("Location: admin_dashboard.php");
@@ -32,7 +34,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Tourism | Explore the World</title>
+<title><?php echo $lang['login_title'] ?? 'Digital Tourism'; ?> | <?php echo $lang['hero_explore_world'] ?? 'Explore the World'; ?></title>
     <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         /* Hero Section Styling */
@@ -105,38 +107,43 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
 
     <nav class="nav-bar">
         <h2 style="color: #ff5a5f; margin:0;">DigitalTravel</h2>
-        <div>
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <span>Hello, <strong><?php echo $_SESSION['user_name']; ?></strong></span>
-                <a href="dashboard.php" style="margin-left:15px; text-decoration:none; color:#333;">My Bookings</a>
-                <a href="logout.php" style="margin-left:15px; color:#ff5a5f; font-weight:bold;">Logout</a>
-            <?php else: ?>
-                <a href="login.php" class="btn" style="padding: 8px 20px; text-decoration:none;">Login</a>
-                <a href="signup.php" style="margin-left:15px; color:#333;">Sign Up</a>
-            <?php endif; ?>
-        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <span>Hello, <strong><?php echo $_SESSION['user_name']; ?></strong></span>
+                    <a href="dashboard.php" style="margin-left:15px; text-decoration:none; color:#333;"><?php echo $lang['nav_my_bookings']; ?></a>
+                    <a href="logout.php" style="margin-left:15px; color:#ff5a5f; font-weight:bold;"><?php echo $lang['nav_logout']; ?></a>
+                <?php else: ?>
+                    <a href="login.php" class="btn" style="padding: 8px 20px; text-decoration:none;"><?php echo $lang['nav_login']; ?></a>
+                    <a href="signup.php" style="margin-left:15px; color:#333;"><?php echo $lang['nav_signup']; ?></a>
+                <?php endif; ?>
+<select onchange="changeLang(this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                    <option value="en" <?php echo ($_SESSION['lang'] ?? 'en') == 'en' ? 'selected' : ''; ?>>English</option>
+                    <option value="es" <?php echo ($_SESSION['lang'] ?? 'en') == 'es' ? 'selected' : ''; ?>>Español</option>
+                    <option value="fr" <?php echo ($_SESSION['lang'] ?? 'en') == 'fr' ? 'selected' : ''; ?>>Français</option>
+                </select>
+            </div>
     </nav>
 
     <header class="hero">
-        <h1 style="font-size: 3rem; margin: 0;">Explore the World</h1>
-        <p style="font-size: 1.2rem;">Find your next adventure with personalized travel packages</p>
+        <h1 style="font-size: 3rem; margin: 0;"><?php echo $lang['hero_explore_world']; ?></h1>
+        <p style="font-size: 1.2rem;"><?php echo $lang['hero_subtitle']; ?></p>
         
         <form action="index.php" method="GET" class="search-box">
-            <input type="text" name="search" placeholder="Where do you want to go?" value="<?php echo htmlspecialchars($search); ?>">
-            <button type="submit">Search</button>
+            <input type="text" name="search" placeholder="<?php echo $lang['search_placeholder']; ?>" value="<?php echo htmlspecialchars($search); ?>">
+            <button type="submit"><?php echo $lang['search_btn']; ?></button>
         </form>
     </header>
 
     <?php if (!empty($recommended) && empty($search)): ?>
     <section class="personalized">
-        <h2 class="section-title">Recommended For You</h2>
+        <h2 class="section-title"><?php echo $lang['section_recommended']; ?></h2>
         <div class="destination-container">
             <?php foreach($recommended as $dest): ?>
                 <div class="card" style="border: 2px solid #3498db;">
                     <img src="./assets/img/<?php echo $dest['image_url']; ?>" alt="<?php echo $dest['name']; ?>">
                     <div class="card-content">
                         <h3><?php echo htmlspecialchars($dest['name']); ?> <small class="badge" style="background:#3498db; font-size:0.6rem;">Match</small></h3>
-                        <a href="destination-details.php?id=<?php echo $dest['id']; ?>" class="btn">Explore Now</a>
+                        <a href="destination-details.php?id=<?php echo $dest['id']; ?>" class="btn"><?php echo $lang['explore_now']; ?></a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -145,7 +152,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
     <hr style="margin: 0 5%; opacity: 0.2;">
     <?php endif; ?>
 
-    <h2 class="section-title"><?php echo !empty($search) ? "Search Results for '$search'" : "Popular Destinations"; ?></h2>
+<h2 class="section-title"><?php echo !empty($search) ? sprintf($lang['search_results_for'], $search) : $lang['section_popular']; ?></h2>
     <div class="destination-container">
         <?php if(empty($destinations)): ?>
             <p>No destinations found matching your search.</p>
@@ -168,11 +175,11 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
     </div>
 
     <div id="chat-box" style="display:none; position:fixed; bottom:80px; right:20px; width:300px; background:white; border-radius:10px; box-shadow:0 5px 20px rgba(0,0,0,0.2); z-index:1000; overflow:hidden;">
-        <div style="background:#ff5a5f; color:white; padding:15px; font-weight:bold;">Support Chat</div>
+        <div style="background:#ff5a5f; color:white; padding:15px; font-weight:bold;"><?php echo $lang['chat_support']; ?></div>
         <form action="contact_handler.php" method="POST" style="padding:15px;">
             <?php if(isset($_SESSION['user_id'])): ?>
                 <label style="font-size:0.8rem; color:#666;">How can we help, <?php echo $_SESSION['user_name']; ?>?</label>
-                <textarea name="message" placeholder="Type your message..." required style="width:100%; height:80px; margin-top:10px; padding:5px; border:1px solid #ddd;"></textarea>
+                <textarea name="message" placeholder="<?php echo $lang['chat_message_placeholder']; ?>" required style="width:100%; height:80px; margin-top:10px; padding:5px; border:1px solid #ddd;"></textarea>
                 <button type="submit" style="width:100%; background:#ff5a5f; color:white; border:none; padding:10px; margin-top:10px; border-radius:5px; cursor:pointer;">Send Message</button>
             <?php else: ?>
                 <p style="font-size:0.9rem; text-align:center;">Please <a href="login.php">Login</a> to chat with support.</p>
@@ -184,6 +191,9 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_preference'])) {
         function toggleChat() {
             var box = document.getElementById('chat-box');
             box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+        }
+        function changeLang(lang) {
+            window.location.href = '?lang=' + lang;
         }
     </script>
 </body>
