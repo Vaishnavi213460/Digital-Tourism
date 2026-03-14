@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// FIXED QUERY: Uses LEFT JOINs to handle both packages and hotels correctly
 $stmt = $pdo->prepare("
     SELECT b.*, 
            COALESCE(d_p.name, d_h.name) as dest_name,
@@ -28,38 +27,52 @@ $user_bookings = $stmt->fetchAll();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Dashboard | Digital Travel</title>
-    <link rel="stylesheet" href="./assets/css/style.css">
+    <title>My Dashboard | TravelEase</title>
     <style>
-        body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        :root { --primary: #ff5a5f; --secondary: #008489; --bg: #f7f9fc; }
+        body { background: var(--bg); font-family: 'Inter', 'Segoe UI', sans-serif; margin: 0; padding: 40px; }
+        
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 30px; }
+        .dashboard-header h1 { font-size: 24px; color: #333; }
+        
         .booking-card { 
-            background: white; 
-            border-radius: 15px; 
-            margin-bottom: 25px; 
-            display: flex; 
-            overflow: hidden; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.2s;
+            background: white; border-radius: 16px; max-width: 1100px; margin: 0 auto 25px; 
+            display: flex; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
         }
-        .booking-card:hover { transform: scale(1.01); }
-        .details-side { flex: 1; padding: 25px; border-left: 5px solid #ff5a5f; }
-        .map-side { width: 350px; background: #eee; }
+
+        .details-side { flex: 1.5; padding: 30px; position: relative; }
+        .map-side { flex: 1; background: #e5e5e5; min-height: 300px; }
+
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .dest-title { font-size: 28px; margin: 0; color: #1a1a1a; }
+        
         .status-badge { 
-            background: #e3f2fd; color: #1976d2; 
-            padding: 5px 12px; border-radius: 20px; 
-            font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
+            background: #e6f7ed; color: #2ecc71; padding: 6px 14px; 
+            border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase;
         }
+
+        .weather-badge {
+            display: flex; align-items: center; background: #f0f7ff;
+            padding: 8px 16px; border-radius: 12px; margin-bottom: 20px; width: fit-content;
+            border: 1px solid #d0e7ff;
+        }
+        .weather-temp { font-size: 18px; font-weight: bold; color: #0056b3; margin-right: 10px; }
+        .weather-desc { font-size: 13px; color: #555; text-transform: capitalize; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .info-item { display: flex; align-items: center; font-size: 15px; color: #444; }
+        .info-item span { margin-right: 10px; font-size: 18px; }
+
         .type-tag {
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #666;
-            background: #f8f9fa;
-            padding: 2px 8px;
-            border-radius: 4px;
+            margin-top: 20px; padding: 4px 10px; background: #f1f1f1;
+            border-radius: 6px; font-size: 12px; font-weight: 600; color: #666; width: fit-content;
         }
-        .btn-home { text-decoration: none; color: #ff5a5f; font-weight: bold; }
+
+        .btn-home { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 14px; }
+        
+        iframe { filter: grayscale(0.2); transition: 0.3s; }
+        iframe:hover { filter: grayscale(0); }
     </style>
 </head>
 <body>
@@ -68,38 +81,36 @@ $user_bookings = $stmt->fetchAll();
         <h1>My Travel Dashboard</h1>
         <a href="index.php" class="btn-home">← Back to Explore</a>
     </div>
-    
-    <?php if(empty($user_bookings)): ?>
-        <div style="text-align:center; padding: 50px; background:white; border-radius:15px;">
-            <h3>No bookings found.</h3>
-            <p>Time to plan your next adventure!</p>
-            <a href="index.php" class="btn">Browse Destinations</a>
-        </div>
-    <?php endif; ?>
 
     <?php foreach($user_bookings as $b): ?>
         <div class="booking-card">
             <div class="details-side">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <h2 style="margin:0; color:#333;"><?php echo htmlspecialchars($b['dest_name']); ?></h2>
+                <div class="header-row">
+                    <h2 class="dest-title"><?php echo htmlspecialchars($b['dest_name']); ?></h2>
                     <span class="status-badge">Confirmed</span>
                 </div>
                 
-                <div style="margin-top: 20px;">
-                    <p><strong>📅 Travel Date:</strong> <?php echo date('F j, Y', strtotime($b['travel_date'])); ?></p>
-                    <p><strong>👤 Traveler:</strong> <?php echo htmlspecialchars($b['full_name']); ?></p>
-                    <div class="type-tag">
-                        <?php echo $b['item_type'] == 'package' ? '✈️ Package Deal' : '🏨 Hotel Stay'; ?>
+                <div id="weather-<?php echo $b['id']; ?>" class="weather-badge" style="display: none;">
+                    <div id="weather-icon-<?php echo $b['id']; ?>"></div>
+                    <div>
+                        <div id="weather-temp-<?php echo $b['id']; ?>" class="weather-temp"></div>
+                        <div id="weather-desc-<?php echo $b['id']; ?>" class="weather-desc"></div>
                     </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item"><span>📅</span> <?php echo date('M j, Y', strtotime($b['travel_date'])); ?></div>
+                    <div class="info-item"><span>👤</span> <?php echo htmlspecialchars($b['full_name']); ?></div>
+                </div>
+
+                <div class="type-tag">
+                    <?php echo $b['item_type'] == 'package' ? '✈️ PACKAGE DEAL' : '🏨 HOTEL ACCOMMODATION'; ?>
                 </div>
             </div>
             
             <div class="map-side">
                 <iframe 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    style="border:0"
+                    width="100%" height="100%" frameborder="0" style="border:0"
                     src="https://maps.google.com/maps?q=<?php echo urlencode($b['dest_name'] . ' ' . $b['dest_location']); ?>&t=&z=13&ie=UTF8&iwloc=&output=embed" 
                     allowfullscreen>
                 </iframe>
@@ -107,5 +118,27 @@ $user_bookings = $stmt->fetchAll();
         </div>
     <?php endforeach; ?>
 
+    <script>
+    const WEATHER_API_KEY = '4395ae39747e4ea5ad1a1580cb0aa901';
+
+    async function fetchWeather(bookingId, city) {
+        try {
+            const resp = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);
+            const data = await resp.json();
+            if(data.cod === 200) {
+                document.getElementById('weather-icon-' + bookingId).innerHTML = `<img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" width="40">`;
+                document.getElementById('weather-temp-' + bookingId).textContent = Math.round(data.main.temp) + '°C';
+                document.getElementById('weather-desc-' + bookingId).textContent = data.weather[0].description;
+                document.getElementById('weather-' + bookingId).style.display = 'flex';
+            }
+        } catch(e) { console.error("Weather load failed"); }
+    }
+
+    window.onload = () => {
+        <?php foreach($user_bookings as $b): ?>
+            fetchWeather(<?php echo $b['id']; ?>, '<?php echo addslashes($b['dest_name']); ?>');
+        <?php endforeach; ?>
+    };
+    </script>
 </body>
 </html>

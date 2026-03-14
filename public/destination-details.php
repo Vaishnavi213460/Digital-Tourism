@@ -1,5 +1,5 @@
 <?php
-session_start(); // START SESSION TO CHECK LOGIN STATUS
+session_start();
 require_once '../config/db.php';
 require_once '../includes/lang_loader.php';
 $lang = loadLanguage();
@@ -27,83 +27,145 @@ $hotels = $acc_stmt->fetchAll();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><?php echo htmlspecialchars($destination['name']); ?> - <?php echo $lang['destination_details'] ?? 'Details'; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($destination['name']); ?> - Details</title>
     <link rel="stylesheet" href="./assets/css/style.css">
     <style>
-        .details-container { max-width: 1000px; margin: auto; padding: 20px; font-family: sans-serif; }
-        .hero-banner { width: 100%; height: 350px; overflow: hidden; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .hero-banner img { width: 100%; height: 100%; object-fit: cover; }
-        .grid-section { display: flex; gap: 20px; margin-top: 30px; }
-        .info-box { flex: 1; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px #ccc; }
-        .badge { background: #2ecc71; color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; }
-        .map-container { margin-top: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
-        .btn-book { display: inline-block; background: #ff5a5f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 0.85rem; margin-top: 10px; }
-        .btn-hotel { background: #3498db; }
-        .btn-login-req { background: #555; }
+        :root { --accent: #ff5a5f; --dark: #2d3436; --bg: #f8f9fa; }
+        body { background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--dark); margin: 0; }
+        
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        
+        /* Floating Weather & Hero */
+        .hero-wrapper { position: relative; border-radius: 20px; overflow: hidden; height: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 30px; }
+        .hero-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .hero-overlay { 
+            position: absolute; bottom: 0; left: 0; right: 0; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.8)); 
+            padding: 40px; color: white; display: flex; justify-content: space-between; align-items: flex-end;
+        }
+
+        .weather-widget { 
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);
+            padding: 15px 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Layout Grid */
+        .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .card h3 { margin-top: 0; border-left: 4px solid var(--accent); padding-left: 15px; font-size: 1.2rem; }
+
+        /* Package & Hotel Styling */
+        .item-row { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        .item-row:last-child { border-bottom: none; }
+        
+        .price-tag { color: #27ae60; font-weight: bold; font-size: 1.1rem; }
+        .btn { 
+            padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; 
+            font-size: 0.9rem; transition: 0.3s; display: inline-block;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-outline { border: 1px solid #ddd; color: #666; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: bold; margin-bottom: 15px; display: block; }
     </style>
 </head>
 <body>
-    <div class="details-container">
-        <p><a href="index.php"><?php echo $lang['back_explore']; ?></a></p>
-        <h1><?php echo sprintf($lang['welcome_to'], htmlspecialchars($destination['name'])); ?></h1>
-        
-        <div class="hero-banner">
-            <img src="./assets/img/<?php echo $destination['image_url']; ?>" alt="Destination Banner">
+
+<div class="container">
+    <a href="index.php" class="back-link">← <?php echo $lang['back_explore']; ?></a>
+
+    <div class="hero-wrapper">
+        <img src="./assets/img/<?php echo $destination['image_url']; ?>" alt="Destination">
+        <div class="hero-overlay">
+            <div>
+                <h1 style="margin: 0; font-size: 3rem;"><?php echo htmlspecialchars($destination['name']); ?></h1>
+                <p style="opacity: 0.9; font-size: 1.1rem;">📍 <?php echo htmlspecialchars($destination['location']); ?></p>
+            </div>
+            
+            <div id="weather" class="weather-widget" style="display: none;">
+                <div id="weather-icon" style="margin-bottom: -10px;"></div>
+                <div id="weather-temp" style="font-size: 1.5rem; font-weight: bold;"></div>
+                <div id="weather-desc" style="font-size: 0.8rem; text-transform: uppercase;"></div>
+            </div>
         </div>
-        
-        <div class="grid-section">
-            <div class="info-box">
+    </div>
+
+    <div class="main-layout">
+        <div class="content-side">
+            <div class="card">
                 <h3><?php echo $lang['attractions_header']; ?></h3>
-                <p><?php echo nl2br(htmlspecialchars($destination['attractions'])); ?></p>
-                <hr style="opacity: 0.3; margin: 20px 0;">
-                <h3><?php echo $lang['food_culture_header']; ?></h3>
-                <p><?php echo nl2br(htmlspecialchars($destination['food_culture'])); ?></p>
+                <p style="line-height: 1.6; color: #555;"><?php echo nl2br(htmlspecialchars($destination['attractions'])); ?></p>
                 
-                <div class="map-container">
-                    <h3><?php echo $lang['location_map']; ?></h3>
-                    <iframe width="100%" height="250" frameborder="0" style="border:0" 
-                        src="https://www.google.com/maps?q=<?php echo urlencode($destination['name'] . ' ' . $destination['location']); ?>&output=embed" 
-                        allowfullscreen>
+                <h3 style="margin-top: 30px;"><?php echo $lang['food_culture_header']; ?></h3>
+                <p style="line-height: 1.6; color: #555;"><?php echo nl2br(htmlspecialchars($destination['food_culture'])); ?></p>
+            </div>
+
+            <div class="card">
+                <h3><?php echo $lang['location_map']; ?></h3>
+                <div style="border-radius: 10px; overflow: hidden; margin-top: 15px;">
+                    <iframe width="100%" height="300" frameborder="0" style="border:0" 
+                        src="https://maps.google.com/maps?q=<?php echo urlencode($destination['name'] . ' ' . $destination['location']); ?>&output=embed">
                     </iframe>
                 </div>
             </div>
-
-            <div class="info-box">
-                <h3><?php echo $lang['packages_header']; ?></h3>
-                <?php foreach($packages as $pkg): ?>
-                    <div style="border-bottom: 1px solid #eee; padding: 15px 0;">
-                        <strong><?php echo htmlspecialchars($pkg['package_name']); ?></strong> 
-                        <span class="badge">$<?php echo $pkg['price']; ?></span>
-                        <p style="margin: 5px 0;"><small><?php echo $pkg['duration']; ?></small></p>
-                        
-                        <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="booking.php?type=package&id=<?php echo $pkg['id']; ?>" class="btn-book"><?php echo $lang['book_package']; ?></a>
-                        <?php else: ?>
-                            <a href="login.php" class="btn-book btn-login-req"><?php echo $lang['login_to_book']; ?></a>
-                        <?php endif; ?>
-                    </div>
-
-                <?php endforeach; ?>
-            </div>
         </div>
 
-        <div class="info-box" style="margin-top:20px;">
-            <h3><?php echo $lang['hotels_header']; ?></h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+        <div class="sidebar">
+            <div class="card">
+                <h3><?php echo $lang['packages_header']; ?></h3>
+                <?php foreach($packages as $pkg): ?>
+                    <div class="item-row">
+                        <div>
+                            <div style="font-weight: bold;"><?php echo htmlspecialchars($pkg['package_name']); ?></div>
+                            <small style="color: #888;"><?php echo $pkg['duration']; ?></small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-tag">$<?php echo $pkg['price']; ?></div>
+                            <a href="booking.php?type=package&id=<?php echo $pkg['id']; ?>" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.75rem; margin-top: 5px;">Book</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="card">
+                <h3><?php echo $lang['hotels_header']; ?></h3>
                 <?php foreach($hotels as $hotel): ?>
-                    <div style="border: 1px solid #eee; padding: 15px; border-radius: 8px;">
-                        <strong><?php echo htmlspecialchars($hotel['hotel_name']); ?> (<?php echo $hotel['stars']; ?>★)</strong>
-                        <p style="font-size: 0.85rem; margin: 10px 0;">🚍 <?php echo $hotel['transport_options']; ?></p>
-                        
-                        <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="booking.php?type=hotel&id=<?php echo $hotel['id']; ?>" class="btn-book btn-hotel"><?php echo $lang['book_hotel']; ?></a>
-                        <?php else: ?>
-                            <a href="login.php" class="btn-book btn-login-req">Login to Book</a>
-                        <?php endif; ?>
+                    <div class="item-row" style="flex-direction: column; align-items: flex-start;">
+                        <div style="width: 100%; display: flex; justify-content: space-between;">
+                            <strong><?php echo htmlspecialchars($hotel['hotel_name']); ?></strong>
+                            <span><?php echo str_repeat('★', $hotel['stars']); ?></span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #777; margin: 5px 0;">🚍 <?php echo $hotel['transport_options']; ?></p>
+                        <a href="booking.php?type=hotel&id=<?php echo $hotel['id']; ?>" class="btn btn-outline" style="width: 100%; text-align: center; box-sizing: border-box;">Reserve Stay</a>
                     </div>
                 <?php endforeach; ?>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+    const API_KEY = '4395ae39747e4ea5ad1a1580cb0aa901';
+    const city = '<?php echo addslashes($destination['name']); ?>';
+
+    async function fetchWeather() {
+        try {
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`);
+            const data = await response.json();
+            if (data.cod === 200) {
+                document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" width="50">`;
+                document.getElementById('weather-temp').textContent = Math.round(data.main.temp) + '°C';
+                document.getElementById('weather-desc').textContent = data.weather[0].description;
+                document.getElementById('weather').style.display = 'block';
+            }
+        } catch (e) { console.error("Weather load failed"); }
+    }
+    fetchWeather();
+</script>
+
 </body>
 </html>
